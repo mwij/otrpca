@@ -6,54 +6,10 @@ import psutil
 import math
 import psutil
 
-def get_frontal_faces(A):
-    
-    dims = A.shape
-    a_frontal_slice_index = tuple( [0,0] + [slice(0, dims[i + 2]) for i in range(len(dims) - 2)]  )
-    a_frontal_slice = A[a_frontal_slice_index]
+from get_frontal_faces import get_frontal_faces
+from t_prod import t_prod
+from t_SVD import t_SVD
 
-    frontal_faces = set([i for i, b in np.ndenumerate(a_frontal_slice)])
-    
-    return(frontal_faces)
-    
-
-def t_prod(A,B, frontal_faces = None):
-    
-    if frontal_faces is None:
-        frontal_faces = get_frontal_faces(A)
-        
-    dim_A = A.shape
-    dim_B = B.shape
-    
-    dim_C = np.array(dim_A)
-    dim_C[1] = dim_B[1]
-    
-    
-    C = np.zeros(tuple(dim_C),dtype=complex)
-    
-    dims = len(dim_A)
-    
-    for i in range(dims - 2):
-        A = np.fft.fft(A, axis = i + 2)
-        B = np.fft.fft(B, axis = i + 2)
-            
-
-    for index in frontal_faces: #paralelise this bit?
-        
-        
-        i_A = tuple( [slice(0, dim_A[0]),slice(0, dim_A[1])] + [i for i in index])
-        i_B = tuple( [slice(0, dim_B[0]),slice(0, dim_B[1])] + [i for i in index])
-        i_C = tuple( [slice(0, dim_C[0]),slice(0, dim_C[1])] + [i for i in index])
-
-        
-        C[i_C] = A[i_A] @ B[i_B]
-
-    
-    for i in range(dims - 2):
-        
-        C = np.fft.ifft(C, axis = i + 2)
-
-    return(C)
 
 
 def tdiag_list(A, frontal_faces = None):
@@ -93,64 +49,6 @@ def tdiag_list_inverse(A_f, dim):
         
     return(A)
         
-    
-
-
-def t_SVD(A, frontal_faces = None):
-    
-    if frontal_faces is None:
-        #print('waiting faces SVD')
-        frontal_faces = get_frontal_faces(A)
-    
-    dim_A = A.shape
-    
-    n_1 = dim_A[0]
-    n_2 = dim_A[1]
-    
-    dim_U = list(dim_A)
-    dim_U[1] = n_1
-    
-    dim_S = dim_A
-    
-    dim_V = list(dim_A)
-    dim_V[0] = n_2
-    
-    
-    U = np.zeros(tuple(dim_U),dtype=complex)
-    S = np.zeros(tuple(dim_S),dtype=complex)
-    V = np.zeros(tuple(dim_V),dtype=complex)
-    
-    dims = len(dim_A)
-    
-    for i in range(dims - 2):
-        A = np.fft.fft(A, axis = i + 2)
-        
-    for index in frontal_faces:
-        
-        i_A = tuple( [slice(0, dim_A[0]),slice(0, dim_A[1])] + [i for i in index])
-        
-        i_U = tuple( [slice(0, dim_U[0]),slice(0, dim_U[1])] + [i for i in index])
-        i_S = tuple( [slice(0, dim_S[0]),slice(0, dim_S[1])] + [i for i in index])
-        i_V = tuple( [slice(0, dim_V[0]),slice(0, dim_V[1])] + [i for i in index])
-        
-        u, s, v = np.linalg.svd(A[i_A])
-        
-        U[i_U] = u
-        V[i_V] = v
-        
-        S_empty = np.zeros((n_1,n_2), dtype=complex)
-        np.fill_diagonal(S_empty, s)
-        S[i_S] =  S_empty               
-        
-
-    for i in range(dims - 2):
-        U = np.fft.ifft(U, axis = i + 2)
-        S = np.fft.ifft(S, axis = i + 2)
-        V = np.fft.ifft(V, axis = i + 2)
-        
-    return(U,S,V)
-
-
 
 def t_transpose(A, frontal_faces = None):
     
