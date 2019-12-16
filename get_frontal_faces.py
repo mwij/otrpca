@@ -16,10 +16,6 @@ def get_frontal_faces(A):
     frontal_faces : list
     the list of frontal faces
 
-    Examples
-    --------
-    >>> get_frontal_faces(np.ones((4,4,2,2)))
-    {(0, 0), (0, 1), (1, 0), (1, 1)}
 
     Notes
     -----

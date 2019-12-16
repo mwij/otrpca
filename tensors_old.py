@@ -9,6 +9,8 @@ import psutil
 from get_frontal_faces import get_frontal_faces
 from t_prod import t_prod
 from t_SVD import t_SVD
+from trpca import trpca
+from soft_threshold import soft_threshold
 
 
 
@@ -223,19 +225,6 @@ def min_A_BD(A,X,Y, frontal_faces):
 
 
 
-def soft_threshold(x, reg_l_1):
-    
-    x = np.where(((x < reg_l_1) & (x > - reg_l_1)), 0, x)
-    x = np.where(x > reg_l_1, x - reg_l_1, x)
-    x = np.where(x < - reg_l_1, x + reg_l_1, x)
-    
-    return(x)
-
-
-
-
-
-
 def min_b(A_1, A_2, frontal_faces):
     
     
@@ -442,135 +431,6 @@ def otrpca(M, reg_c = None, reg_nuc  = None, reg_l_1 = None, feed_forward = None
         
         
     
-
-    
-
-
-
-def min_C(M, Y, L, mu, reg):
-    
-    A = M - L - Y / mu
-    v = reg / mu
-    
-    return(soft_threshold(A,v))
-
-
-
-
-
-def t_SVT(A, tau, frontal_faces = None):
-    
-    if frontal_faces is None:
-        print('waiting faces SVD')
-        frontal_faces = set([i[2:] for i, b in np.ndenumerate(A)])
-    
-    dim_A = A.shape
-    
-    n_1 = dim_A[0]
-    n_2 = dim_A[1]
-     
-    W = np.zeros(tuple(dim_A),dtype=complex)
-
-    dims = len(dim_A)
-    
-    for i in range(dims - 2):
-        A = np.fft.fft(A, axis = i + 2)
-        
-    for index in frontal_faces:
-        
-        i = tuple( [slice(0, dim_A[0]),slice(0, dim_A[1])] + [i for i in index])
-                
-        u, s, v = np.linalg.svd(A[i])
-        
-        s_new = np.zeros((n_1,n_2), dtype=complex)
-        np.fill_diagonal(s_new, s)
-        
-        w = u @ np.where(s_new - tau < 0, 0, s_new - tau) @ v
-        
-        W[i] = w
-        
-
-    for i in range(dims - 2):
-        W = np.fft.ifft(W, axis = i + 2)
-
-    return(W)
-
-
-
-
-
-def trpca(M, reg):
-    dim = M.shape
-    
-    if reg is None:
-        n_min = min(dim[0], dim[1])
-        reg = np.sqrt( n_min / np.prod(dim))
-    
-    frontal_faces = get_frontal_faces(M)
-    
-    L = np.zeros(dim)
-    C = np.zeros(dim)
-    Y = np.zeros(dim)
-    
-    L_old = L
-    C_old = C
-    
-    rho    = 1.1
-    mu     = 1e-3 
-    mu_max = 1e10
-    eps    = 1e-8
-    
-    error = 1
-    
-    count = 0
-    
-    print('start trpca')
-    
-    while(error > eps):
-        
-        L = min_L(M, Y, C, mu, frontal_faces)
-        
-        C = min_C(M, Y, L, mu, reg)
-        
-        Y = Y + mu*(L + C - M)
-        
-        mu = min(rho*mu, mu_max)
-        
-        L_error = np.max(np.abs(L - L_old))
-        C_error = np.max(np.abs(C - C_old))
-        M_error = np.max(np.abs(L + C - M))
-        
-        error = max(L_error, C_error, M_error)
-        
-        L_old = L
-        C_old = C
-        
-        
-        if(count % 10 == 0):
-            print('cpu', psutil.cpu_percent(), 'ram', psutil.virtual_memory()[2], count, error)
-        
-        count = count +1
-        
-        
-        
-
-    
-    return(L, C)
-
-
-
-def min_L(M, Y, C, mu, frontal_faces):
-    
-    A = M - C - Y / mu
-    
-
-    
-    L = t_SVT(A, 1/mu, frontal_faces)
-    
-    return(L)
-
-
-
 
 
 

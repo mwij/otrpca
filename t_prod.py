@@ -20,19 +20,7 @@ def t_prod(A, B, frontal_faces = None):
     ----------       
     C : np-dimensional array
         n1 x n2 x n3 x ... x np tensor
-        
-    Examples
-    --------
-    >>>>    A = np.ones((2,2,2))
-            B = np.ones((2,2,2))
-            t_prod(A,B)
-         
-    array([[[4.+0.j, 4.+0.j],
-            [4.+0.j, 4.+0.j]],
-
-           [[4.+0.j, 4.+0.j],
-            [4.+0.j, 4.+0.j]]])
-    
+          
     References
     ----------
     [1] C.D. Martin, R. Shafer, and B. Larue, "An Order-$p$ Tensor Factorization with Applications in Imaging"
