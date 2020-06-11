@@ -16,6 +16,9 @@ def trpca(M, reg=None, frontal_faces=None, rho=1.1, mu=1e-3, mu_max=1e10, eps=1e
         
     reg : float, regularisation parameter on the 1-norm that is applied to the noise tensor (lamda in text) calculated below if None
           defaults to 1 / sqrt(max(n1,n2) * n3 * ... np)
+
+    frontal_faces : indices of frontal faces to iterate over
+                    list of tuples
            
     mu : float, calibrates the penalty for the sum of the low-rank component and the sparse component differeing from the observation
          defaults to 1e-3 
@@ -92,6 +95,9 @@ def t_SVT(A, tau, frontal_faces = None):
                     
     tau : float, threshold for singular values
           reg / mu, where reg and mu are defined in trpca algorithm
+
+    frontal_faces : indices of frontal faces to iterate over
+                    list of tuples
        
     Returns
     ----------       

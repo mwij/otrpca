@@ -15,7 +15,6 @@ Final edit
 		remove tabs (insert spaces)
 
 
-check if frontal_faces is really needed
 t_product twice as fast?
 
 

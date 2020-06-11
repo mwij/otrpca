@@ -30,7 +30,7 @@ def soft_threshold(X, v):
     return(X)
 
 def get_frontal_faces(A):
-    """Indices to fix for tensor multiplication
+    """Indices of frontal faces to iterate over for tensor multiplication
 
        Provides a list of the indices that need to be fixed in each
        dimension (other than the first two) for the t_product
@@ -57,9 +57,6 @@ def get_frontal_faces(A):
     This was previously within the t_prod function, but repeated evaluation 
     had a huge computational cost and was not neccery.
     
-    Can probably be replaced with some simple permutations?
-    def get_frontal_faces_2(A):
-        return(set(itertools.product(*[list(range(dim)) for dim in A.shape[2:]])))
     """
     
     dims = A.shape
@@ -80,8 +77,12 @@ def t_prod(A, B, frontal_faces=None):
     ----------
     A : np-dimensional array
         n1 x j x n3 x ... x np tensor
+
     B : np-dimensional array
         j x n2 x n3 x ... x np tensor
+
+    frontal_faces : indices of frontal faces to iterate over
+                    list of tuples
        
     Returns
     ----------       
@@ -134,6 +135,9 @@ def t_SVD(A, frontal_faces=None):
     ----------
     A : np-dimensional array
         n1 x n2 x n3 x ... x np tensor
+
+    frontal_faces : indices of frontal faces to iterate over
+                    list of tuples
        
     Returns
     ----------       
@@ -207,6 +211,9 @@ def t_transpose(A, frontal_faces = None):
     ----------
     A : np-dimensional array
         n1 x n2 x n3 x ... x np tensor
+
+    frontal_faces : indices of frontal faces to iterate over
+                    list of tuples
        
     Returns
     ----------       
@@ -289,6 +296,9 @@ def t_invert(A, frontal_faces):
     ----------
     A : np-dimensional array
         n_1 x n_1 x ... x n_p tensor
+
+    frontal_faces : indices of frontal faces to iterate over
+                    list of tuples
        
     Returns
     ----------       
@@ -322,6 +332,9 @@ def tdiag_list(A, frontal_faces=None):
     ----------
     A : np-dimensional array
         n_1 x n_1 x ... x n_p tensor
+
+    frontal_faces : indices of frontal faces to iterate over
+                    list of tuples
        
     Returns
     ----------       

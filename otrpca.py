@@ -2,7 +2,7 @@ import numpy as np
 from t_tools import *
 
 
-def otrpca(M, rank=1, initial_A='t_SVD', iterations=1, reg_l_1=None, reg_nuc=1, reg_c=100, bc_conv=5, bc_error=1e-8):
+def otrpca(M, rank=1, initial_A='t_SVD', iterations=1, reg_l_1=None, reg_nuc=1, reg_c=100, bc_conv=5, bc_error=1e-8, frontal_faces=None):
     """Online Tensor Robust Principal Component Analysis 
     
     Decomposition of a tensor M = L + C where L has low tensor tubal rank 
@@ -41,6 +41,9 @@ def otrpca(M, rank=1, initial_A='t_SVD', iterations=1, reg_l_1=None, reg_nuc=1, 
 
     bc_error : float, the target for the error between successive iterations in min_b_c to be below
     		   defaults to 1e-8
+
+    frontal_faces : indices of frontal faces to iterate over
+                    list of tuples
        
     Returns
     ----------       
@@ -85,8 +88,9 @@ def otrpca(M, rank=1, initial_A='t_SVD', iterations=1, reg_l_1=None, reg_nuc=1, 
         n_min = min(dim[0], dim[1])
         reg_l_1 = np.sqrt( n_min / np.prod(dim))
         
-    frontal_faces = get_frontal_faces(M)
-
+    if frontal_faces is None:
+        frontal_faces = get_frontal_faces(M)
+        
     b = np.zeros(list((rank, 1)) + dim[2:], dtype = complex)  
     Y = np.zeros(list((rank, rank)) + dim[2:], dtype = complex)
     X = np.zeros(list((dim[0], rank)) + dim[2:], dtype = complex)
@@ -218,6 +222,9 @@ def min_A(A, X, Y, frontal_faces):
  
     Y : np-dimensional array, Y_t in algorithm 1 of [1] 
         n2 x n2 x n3 x ... x np tensor
+
+    frontal_faces : indices of frontal faces to iterate over
+                    list of tuples
 
     Returns
     ----------       
