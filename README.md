@@ -8,15 +8,13 @@ Different but relevent to [this](http://tensorly.org/stable/development_guide/in
 
 
 
-make notebooks look nice
 
 Final edit
 	remove print('copmuting....')
 	pep 8 check
+		remove tabs (insert spaces)
 
 
-make otrpca have option to reiterate
-make otrpca have option to define starting value for A_0
 check if frontal_faces is really needed
 t_product twice as fast?
 

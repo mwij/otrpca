@@ -2,7 +2,7 @@ import numpy as np
 from t_tools import *
 
 
-def otrpca(M, rank=1, initial_A='t_SVD', reg_l_1=None, reg_nuc=1, reg_c=100, bc_conv=5, bc_error=1e-8):
+def otrpca(M, rank=1, initial_A='t_SVD', iterations=1, reg_l_1=None, reg_nuc=1, reg_c=100, bc_conv=5, bc_error=1e-8):
     """Online Tensor Robust Principal Component Analysis 
     
     Decomposition of a tensor M = L + C where L has low tensor tubal rank 
@@ -19,8 +19,11 @@ def otrpca(M, rank=1, initial_A='t_SVD', reg_l_1=None, reg_nuc=1, reg_c=100, bc_
     rank : integer greater than 0 and less than M[1] (r in Algorithm 1 of [1])
     	  defaults to 1 (meaning L has rank 1, which would be the case if it was a series of corrupted tensors)
 
-    intial_A: np-dimensional array, type of starting value for A that is then calculated below (A_0 in Algorithm 1 of [1])
-        	  string, either 't_SVD' or 'random_normal'
+    intial_A: np-dimensional array, starting value for A that is either supplied or calculated below (this A_0 in Algorithm 1 of [1])
+        	  n1 x rank x n3 x ... x np tensor
+
+    iterations: the number of times that the minimum of each slice will be calculated
+                defaults to 1 
 
     reg_l_1 : float, regularisation parameter on the 1-norm that is applied to the noise tensor (lamda_1 in Algorithm 1 of [1]) calculated below if None
           	  defaults to 1 / sqrt(max(n1,n2) * n3 * ... np)
@@ -71,9 +74,12 @@ def otrpca(M, rank=1, initial_A='t_SVD', reg_l_1=None, reg_nuc=1, reg_c=100, bc_
     	A = U[:, 0:rank, :, :]
     	print('finished svd')
 
-    if initial_A == 'random_normal':
+    elif initial_A == 'random_normal':
         dim_A = list((dim[0], rank)) + dim[2:]
         A = np.random.normal(0, 1, dim_A) 
+
+    else:
+        A = initial_A
     
     if reg_l_1 is None:
         n_min = min(dim[0], dim[1])
@@ -90,29 +96,33 @@ def otrpca(M, rank=1, initial_A='t_SVD', reg_l_1=None, reg_nuc=1, reg_c=100, bc_
     M_slice = [slice(0, dim[i]) for i in range(len(dim))]
     B_slice = [slice(0, rank)] + M_slice[1:]
     
-    for i in range(dim[1]):
+    while iterations > 0:
         
-        #select slice to work on
-        M_slice[1] = slice(i, i + 1)
-        m = M[tuple(M_slice)]
+        for i in range(dim[1]):
+            
+            #select slice to work on
+            M_slice[1] = slice(i, i + 1)
+            m = M[tuple(M_slice)]
 
-        #minimise with respect to b and c
-        print('minimising b and c')
-        b, c = min_b_c(m, A, b, reg_c, reg_l_1, reg_nuc, frontal_faces, bc_conv, bc_error)
-        
-        #store b and c
-        C[tuple(M_slice)] = c
-        B_slice[1] = slice(i, i + 1)
-        B[tuple(B_slice)] = b
+            #minimise with respect to b and c
+            print('minimising b and c')
+            b, c = min_b_c(m, A, b, reg_c, reg_l_1, reg_nuc, frontal_faces, bc_conv, bc_error)
+            
+            #store b and c
+            C[tuple(M_slice)] = c
+            B_slice[1] = slice(i, i + 1)
+            B[tuple(B_slice)] = b
 
-        #update Xs and Ys
-        Y = Y + reg_c * t_prod(b, t_transpose(b, frontal_faces), frontal_faces)
-        X = X + reg_c * t_prod((m - c), t_transpose(b, frontal_faces), frontal_faces)
-           
-        #minimise with respect to A
-        print('minimising A')
-        A = min_A(A, X, Y + reg_nuc * identity(Y.shape), frontal_faces)
-        
+            #update Xs and Ys
+            Y = Y + reg_c * t_prod(b, t_transpose(b, frontal_faces), frontal_faces)
+            X = X + reg_c * t_prod((m - c), t_transpose(b, frontal_faces), frontal_faces)
+               
+            #minimise with respect to A
+            print('minimising A')
+            A = min_A(A, X, Y + reg_nuc * identity(Y.shape), frontal_faces)
+
+        iterations = iterations - 1 
+            
     #compute final estimate of L
     L = t_prod(A, B)
         
