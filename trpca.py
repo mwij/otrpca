@@ -4,7 +4,7 @@ from t_tools import *
 def trpca(M, reg=None, frontal_faces=None, 
           rho=1.1, mu=1e-3, mu_max=1e10, eps=1e-8):
 
-    """Tensor robust principal component analysis 
+    """Tensor robust principal component analysis.
     
     Decomposition of a tensor M = L + C where L has low tensor tubal 
     rank and C is a sparse noise tnesor. Note this is algorithm 4 in [1] 
@@ -61,7 +61,7 @@ def trpca(M, reg=None, frontal_faces=None,
         n_min = min(dim[0], dim[1])
         reg = np.sqrt(n_min / np.prod(dim))
     
-    #initialise values
+    #Initialise values.
     L = np.zeros(dim)
     C = np.zeros(dim)
     Y = np.zeros(dim)
@@ -73,13 +73,13 @@ def trpca(M, reg=None, frontal_faces=None,
     
     while(error > eps):
         
-        #update values
+        #Update values.
         L = t_SVT(M - C - Y / mu, 1 / mu, frontal_faces)
         C = soft_threshold(M - L - Y / mu, reg / mu)
         Y = Y + mu * (L + C - M)     
         mu = min(rho * mu, mu_max)
         
-        #update error
+        #Update error.
         L_error = np.max(np.abs(L - L_old))
         C_error = np.max(np.abs(C - C_old))
         M_error = np.max(np.abs(L + C - M))
@@ -134,15 +134,15 @@ def t_SVT(A, tau, frontal_faces = None):
         
     for index in frontal_faces:
         
-        #frontal face having its singular values thresholded
+        #Frontal face having its singular values thresholded.
         i = tuple( [slice(0, dim_A[0]), slice(0, dim_A[1])] + [i for i in index])
         u, s, v = np.linalg.svd(A[i])
         
-        #old singular values
+        #Old singular values.
         s_new = np.zeros((n_1,n_2), dtype=complex)
         np.fill_diagonal(s_new, s)
         
-        #calculate new singular values then multiply
+        #Calculate new singular values then multiply.
         w = u @ np.where(s_new - tau < 0, 0, s_new - tau) @ v
         
         W[i] = w

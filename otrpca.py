@@ -5,7 +5,7 @@ def otrpca(M, rank=1, initial_A='t_SVD', iterations=1,
            reg_l_1=None, reg_nuc=1, reg_c=100, 
            bc_conv=5, bc_error=1e-8, frontal_faces=None):
 
-    """Online Tensor Robust Principal Component Analysis 
+    """Online Tensor Robust Principal Component Analysis.
     
     Decomposition of a tensor M = L + C where L has low tensor tubal rank 
     and C is a sparse noise tnesor. Note this is algorithm 1 in [1] and a
@@ -78,16 +78,14 @@ def otrpca(M, rank=1, initial_A='t_SVD', iterations=1,
     
     dim = list(M.shape)
 
-    #make sure rank is not larger than its max possible value
+    #Make sure rank is not larger than its max possible value.
     if rank > dim[1]:
         rank = dim[1]
 
-    #initialise values
+    #Initialise values.
     if initial_A == 't_SVD':
-        print('copmuting SVD')
         U, S, V = t_SVD(M)
         A = U[:, 0:rank, :, :]
-        print('finished svd')
 
     elif initial_A == 'random_normal':
         dim_A = list((dim[0], rank)) + dim[2:]
@@ -116,21 +114,25 @@ def otrpca(M, rank=1, initial_A='t_SVD', iterations=1,
         
         for i in range(dim[1]):
             
-            #select slice to work on
+            #Keep track of progress.
+            print('iterations remaining: ', iterations - 1,
+                  'frames remaining: ', dim[1] - i - 1, 
+                  end="\r")
+            
+            #Select slice to work on.
             M_slice[1] = slice(i, i + 1)
             m = M[tuple(M_slice)]
 
-            #minimise with respect to b and c
-            print('minimising b and c')
+            #Minimise with respect to b and c.
             b, c = min_b_c(m, A, b, reg_c, reg_l_1, reg_nuc, 
                 frontal_faces, bc_conv, bc_error)
             
-            #store b and c
+            #Store b and c.
             C[tuple(M_slice)] = c
             B_slice[1] = slice(i, i + 1)
             B[tuple(B_slice)] = b
 
-            #update Xs and Ys
+            #Update Xs and Ys.
             Y = Y + reg_c * t_prod(b, 
                                    t_transpose(b, 
                                    frontal_faces), frontal_faces)
@@ -138,13 +140,12 @@ def otrpca(M, rank=1, initial_A='t_SVD', iterations=1,
                                    t_transpose(b, 
                                    frontal_faces), frontal_faces)
                
-            #minimise with respect to A
-            print('minimising A')
+            #Minimise with respect to A.
             A = min_A(A, X, Y + reg_nuc * identity(Y.shape), frontal_faces)
 
         iterations = iterations - 1 
             
-    #compute final estimate of L
+    #Compute final estimate of L.
     L = t_prod(A, B)
         
     return(L, C)
@@ -153,7 +154,7 @@ def min_b_c(m, A, b, reg_c, reg_nuc, reg_l_1, frontal_faces,
             bc_conv=5, bc_error=1e-8):
 
     """Finds the b and c that minimise equation 4.2.6 in [1] (this is 
-    algorithm 2 in [1])
+    algorithm 2 in [1]).
     
     Parameters
     ----------
@@ -190,7 +191,7 @@ def min_b_c(m, A, b, reg_c, reg_nuc, reg_l_1, frontal_faces,
     
     dim = m.shape
      
-    #calculate A tilde
+    #Calculate A tilde.
     A_t_A_shape = [A.shape[1]] + list(A.shape[1:])
     A_1 = reg_c * t_prod(t_transpose(A, frontal_faces), A, frontal_faces) 
     + reg_nuc * identity(A_t_A_shape)
@@ -198,7 +199,7 @@ def min_b_c(m, A, b, reg_c, reg_nuc, reg_l_1, frontal_faces,
     A_2 = reg_c * t_transpose(A, frontal_faces)
     A_tilde = t_prod(A_1_inv, A_2, frontal_faces)
 
-    #initialise values
+    #Initialise values.
     c = np.zeros(tuple(dim), dtype=complex)
     c_minus_one = c
     b_minus_one = b
@@ -206,28 +207,28 @@ def min_b_c(m, A, b, reg_c, reg_nuc, reg_l_1, frontal_faces,
     error_minus_one = 1
     small_errors = 0
     
-    #converged once this concludes
+    #Converged once this concludes.
     while(small_errors < bc_conv):
         
-        #update c and b
+        #Update c and b.
         c_mult = m - t_prod(A, b, frontal_faces)
         c = soft_threshold(np.real(c_mult), reg_l_1 / reg_c)
         b = t_prod(A_tilde, m - c, frontal_faces)
         
-        #update errors
+        #Update errors.
         error_minus_one = error
         error = max(np.linalg.norm(c - c_minus_one), 
                     np.linalg.norm(b - b_minus_one))
         
-        #while loop concludes when the error is below the given 
-        #value bc_conv times
+        #While loop concludes when the error is below the given
+        #value bc_conv times.
         if(error < bc_error):
             small_errors = small_errors + 1
 
         else:
             small_errors = 0
         
-        #store the old c and b
+        #Store the old c and b.
         c_minus_one = c
         b_minus_one = b
         
@@ -236,7 +237,7 @@ def min_b_c(m, A, b, reg_c, reg_nuc, reg_l_1, frontal_faces,
 def min_A(A, X, Y, frontal_faces):
 
     """Finds the A that minimises equation 4.2.6 in [1] (this is 
-    algorithm 3 in [1])
+    algorithm 3 in [1]).
     
     Parameters
     ----------
@@ -257,7 +258,6 @@ def min_A(A, X, Y, frontal_faces):
     A : np-dimensional array, updated A (A_{t} in algorithm 1 of [1])
         n1 x n2 x n3 x ... x np tensor
 
-
     References
     ----------
     [1] M. Wijnen, "Online Tensor Robust Principle Component Analysis"
@@ -270,7 +270,7 @@ def min_A(A, X, Y, frontal_faces):
     """
     dim = X.shape
 
-    #get tensors in list diagonlised (in fourier domain) with indices
+    #Get tensors in list diagonlised (in fourier domain) with indices.
     Y_f = tdiag_list(Y, frontal_faces)
     X_f = tdiag_list(X, frontal_faces)
     A_f = tdiag_list(A, frontal_faces)
@@ -283,14 +283,14 @@ def min_A(A, X, Y, frontal_faces):
             Y_f_i, index = Y_f[k][0], Y_f[k][1]
             A_f_i, index = A_f[k][0], A_f[k][1]
             
-            #calculate new value
+            #Calculate new value.
             new_val = (X_f_i[:,j] - A_f_i @ Y_f_i[:,j]) / Y_f_i[j,j]
             A_f_i[:,j] = new_val + A_f_i[:,j]
             
-            #store updated value
+            #Store updated value.
             A_f[k] = tuple([A_f_i, index])
 
-    #back from list in fourier domain to tensor
+    #Back from list in fourier domain to tensor.
     A = tdiag_list_inverse(A_f, dim)
 
     return(A)

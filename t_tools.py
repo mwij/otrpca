@@ -32,10 +32,10 @@ def soft_threshold(X, v):
 
 def get_frontal_faces(A):
 
-    """Indices of frontal faces to iterate over for the t_product
+    """Indices of frontal faces to iterate over for the t_product.
 
        Provides a list of the indices that need to be fixed in each
-       dimension (other than the first two) for the t_product
+       dimension (other than the first two) for the t_product.
 
     Parameters
     ----------
@@ -111,7 +111,7 @@ def t_prod(A, B, frontal_faces=None):
     dim_C = list((dim_A[0], dim_B[1])) +  list(dim_A[2:])
     dims = len(dim_A)
     
-    C = np.zeros(tuple(dim_C), dtype = complex)
+    C = np.zeros(tuple(dim_C), dtype=complex)
     
     for i in range(dims - 2):
         A = np.fft.fft(A, axis = i + 2)
@@ -131,7 +131,7 @@ def t_prod(A, B, frontal_faces=None):
 
 def t_SVD(A, frontal_faces=None):
 
-    """Tensor singular value decomposition 
+    """Tensor singular value decomposition.
     
     Decomposition of a tensor A = U * S * V (* denoting the tensor 
     product from [1]) where U and V are both orthogonal tensors and S is 'diagonal', as derived in [1] and reproduced in Theorom 2.23 of [2].
@@ -158,9 +158,8 @@ def t_SVD(A, frontal_faces=None):
     
     References
     ----------
-    [1] C.D. Martin, R. Shafer, and B. Larue, "An Order-$p$ Tensor Factorization 
-    with Applications in Imaging" SIAM Journal on Scientific Computing, 
-    vol. 35, n. 1, pp. 474-490, 2013. DOI: 10.1137/110841229
+    [1] C.D. Martin, R. Shafer, and B. Larue, "An Order-$p$ Tensor 
+    Factorization with Applications in Imaging" SIAM Journal on Scientific Computing, vol. 35, n. 1, pp. 474-490, 2013. DOI: 10.1137/110841229
     
     [2] M. Wijnen, "Online Tensor Robust Principle Component Analysis"
     ANU Open Access Theses, 2018. DOI: 10.25911/5d889f8814c25
@@ -178,9 +177,9 @@ def t_SVD(A, frontal_faces=None):
     dim_V = list((n_2,n_2)) + list(dim_A[2:])
     dims = len(dim_A)
 
-    U = np.zeros(tuple(dim_U), dtype = complex)
-    S = np.zeros(tuple(dim_S), dtype = complex)
-    V = np.zeros(tuple(dim_V), dtype = complex)
+    U = np.zeros(tuple(dim_U), dtype=complex)
+    S = np.zeros(tuple(dim_S), dtype=complex)
+    V = np.zeros(tuple(dim_V), dtype=complex)
     
     for i in range(dims - 2):
         A = np.fft.fft(A, axis = i + 2)
@@ -210,10 +209,10 @@ def t_SVD(A, frontal_faces=None):
 
 def t_transpose(A, frontal_faces = None):
 
-    """Tensor Transpose
+    """Tensor Transpose.
     
     Transposes the tensor A according to defition 3.9 of [1] and 
-    Definition 2.11 of [2]
+    Definition 2.11 of [2].
     
     Parameters
     ----------
@@ -230,9 +229,8 @@ def t_transpose(A, frontal_faces = None):
     
     References
     ----------
-    [1] C.D. Martin, R. Shafer, and B. Larue, "An Order-$p$ Tensor Factorization 
-    with Applications in Imaging" SIAM Journal on Scientific Computing, 
-    vol. 35, n. 1, pp. 474-490, 2013. DOI: 10.1137/110841229
+    [1] C.D. Martin, R. Shafer, and B. Larue, "An Order-$p$ Tensor 
+    Factorization with Applications in Imaging" SIAM Journal on Scientific Computing, vol. 35, n. 1, pp. 474-490, 2013. DOI: 10.1137/110841229
     
     [2] M. Wijnen, "Online Tensor Robust Principle Component Analysis"
     ANU Open Access Theses, 2018. DOI: 10.25911/5d889f8814c25
@@ -244,7 +242,7 @@ def t_transpose(A, frontal_faces = None):
     dim_A = A.shape
     dim_A_T = list((dim_A[1], dim_A[0])) + list(dim_A[2:])
     dims = len(dim_A)
-    A_T = np.zeros(tuple(dim_A_T), dtype = complex)
+    A_T = np.zeros(tuple(dim_A_T), dtype=complex)
               
     for index in frontal_faces:
         
@@ -259,10 +257,10 @@ def t_transpose(A, frontal_faces = None):
 
 def identity(dim):
 
-    """Tensor Identity
+    """Tensor Identity.
     
     Returns a tensor of dimension dim that is the identity under the 
-    t_prod, as defined in defition 3.4 of [1] and Definition 2.8 of [2]
+    t_prod, as defined in defition 3.4 of [1] and Definition 2.8 of [2].
     
     Parameters
     ----------
@@ -275,9 +273,8 @@ def identity(dim):
     
     References
     ----------
-    [1] C.D. Martin, R. Shafer, and B. Larue, "An Order-$p$ Tensor Factorization 
-    with Applications in Imaging" SIAM Journal on Scientific Computing, 
-    vol. 35, n. 1, pp. 474-490, 2013. DOI: 10.1137/110841229
+    [1] C.D. Martin, R. Shafer, and B. Larue, "An Order-$p$ Tensor 
+    Factorization with Applications in Imaging" SIAM Journal on Scientific Computing, vol. 35, n. 1, pp. 474-490, 2013. DOI: 10.1137/110841229
     
     [2] M. Wijnen, "Online Tensor Robust Principle Component Analysis"
     ANU Open Access Theses, 2018. DOI: 10.25911/5d889f8814c25
@@ -288,21 +285,21 @@ def identity(dim):
         return('error, non-square inverse')
     
     I = np.zeros(dim)
-    zeros = list(np.zeros(len(dim) - 2, dtype = int)) # frontal face indices
+    zeros = list(np.zeros(len(dim) - 2, dtype=int)) # frontal face indices
    
     for i in range(dim[0]):
+        
         index = [i,i] + zeros
-
         I[tuple(index)] = 1
         
     return(I)
 
 def t_invert(A, frontal_faces):
 
-    """Tensor Invertor
+    """Tensor Invertor.
     
     Returns the inverse tensor of under the t_prod,
-    as defined in Definition 3.5 of [1] and Definition 2.9 of [2]
+    as defined in Definition 3.5 of [1] and Definition 2.9 of [2].
     
     Parameters
     ----------
@@ -319,9 +316,8 @@ def t_invert(A, frontal_faces):
     
     References
     ----------
-    [1] C.D. Martin, R. Shafer, and B. Larue, "An Order-$p$ Tensor Factorization 
-    with Applications in Imaging" SIAM Journal on Scientific Computing, 
-    vol. 35, n. 1, pp. 474-490, 2013. DOI: 10.1137/110841229
+    [1] C.D. Martin, R. Shafer, and B. Larue, "An Order-$p$ Tensor 
+    Factorization with Applications in Imaging" SIAM Journal on Scientific Computing, vol. 35, n. 1, pp. 474-490, 2013. DOI: 10.1137/110841229
     
     [2] M. Wijnen, "Online Tensor Robust Principle Component Analysis"
     ANU Open Access Theses, 2018. DOI: 10.25911/5d889f8814c25
@@ -339,7 +335,7 @@ def t_invert(A, frontal_faces):
 def tdiag_list(A, frontal_faces=None):
 
     """Returns a list of the frontal faces of 'diagonalised' (by fft) 
-        A and their indices
+        A and their indices.
         
     Parameters
     ----------
@@ -375,7 +371,7 @@ def tdiag_list(A, frontal_faces=None):
 
 def tdiag_list_inverse(A_f, dim):
 
-    """Inverts tdiag_list
+    """Inverts tdiag_list.
         
     Parameters
     ----------
@@ -389,7 +385,7 @@ def tdiag_list_inverse(A_f, dim):
         n_1 x n_1 x ... x n_p tensor
     """
 
-    A = np.zeros(dim, dtype = complex)
+    A = np.zeros(dim, dtype=complex)
     dims = len(dim)
     
     for face, index in A_f:
