@@ -4,4 +4,4 @@ I produced these algorithms that recover low rank data structures which have bee
 
 ![](/example.png?raw=true)
 
-This was done using 15 satellite images of the same area that were all cloud-affected.
+This was done using 18 satellite images of the same area that were all cloud-affected.
