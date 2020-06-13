@@ -1,39 +1,44 @@
 import numpy as np
 from t_tools import *
 
-def trpca(M, reg=None, frontal_faces=None, rho=1.1, mu=1e-3, mu_max=1e10, eps=1e-8):
+def trpca(M, reg=None, frontal_faces=None, 
+          rho=1.1, mu=1e-3, mu_max=1e10, eps=1e-8):
+
     """Tensor robust principal component analysis 
     
-    Decomposition of a tensor M = L + C where L has low tensor tubal rank 
-    and C is a sparse noise tnesor. Note this is algorithm 4 in [1] and a
-    matlab implementation can be found here: 
-    https://github.com/canyilu/Tensor-Robust-Principal-Component-Analysis-TRPCA.
+    Decomposition of a tensor M = L + C where L has low tensor tubal 
+    rank and C is a sparse noise tnesor. Note this is algorithm 4 in [1] 
+    and matlab implementation can be found here: https://github.com/
+    canyilu/Tensor-Robust-Principal-Component-Analysis-TRPCA.
     
     Parameters
     ----------
     M : np-dimensional array, observed tensor
         n1 x n2 x n3 x ... x np tensor
         
-    reg : float, regularisation parameter on the 1-norm that is applied to the noise tensor (lamda in text) calculated below if None
-          defaults to 1 / sqrt(max(n1,n2) * n3 * ... np)
+    reg : float, regularisation parameter on the 1-norm that is 
+          applied to the noise tensor (lamda in text) calculated below
+          defaults to 1 / sqrt(max(n1,n2) * n3 * ... np) if none
 
     frontal_faces : indices of frontal faces to iterate over
                     list of tuples
            
-    mu : float, calibrates the penalty for the sum of the low-rank component and the sparse component differeing from the observation
+    mu : float, calibrates the penalty for the sum of the low-rank 
+         and the sparse components differeing from the observation
          defaults to 1e-3 
     
     mu_max : float, upper bound for mu
              defaults to 1e10
              
-    rho : float, grow mu by this number each iteration (until hit upper bound)
+    rho : float, grow mu by this each iteration (until upper bound)
           defaults to 1.1
              
-    eps : float, converged when maximum difference between succesecive tensors (using infinity norm) is less than this
+    eps : float, converged when maximum difference between succesecive 
+          tensors (using infinity norm) is less than this
           defaults to 1e-8
        
     Returns
-    ----------       
+    ----------
     L : np-dimensional array, uncorrupted tensor
         n1 x n1 x n3 x ... x np tensor
     
@@ -43,8 +48,8 @@ def trpca(M, reg=None, frontal_faces=None, rho=1.1, mu=1e-3, mu_max=1e10, eps=1e
     References
     ----------
     [1] C. Lu, J. Feng, Y. Chen, W. Liu, Z. Lin, and S. Yan, 
-    "Tensor Robust Principal Component Analysis with A New Tensor Nuclear Norm",
-    2018, arXiv:1804.03728.
+    "Tensor Robust Principal Component Analysis with A New Tensor 
+    Nuclear Norm", 2018, arXiv:1804.03728.
     """
     
     if frontal_faces is None:
@@ -69,10 +74,10 @@ def trpca(M, reg=None, frontal_faces=None, rho=1.1, mu=1e-3, mu_max=1e10, eps=1e
     while(error > eps):
         
         #update values
-        L = t_SVT(M - C - Y / mu, 1/mu, frontal_faces)
+        L = t_SVT(M - C - Y / mu, 1 / mu, frontal_faces)
         C = soft_threshold(M - L - Y / mu, reg / mu)
-        Y = Y + mu*(L + C - M)     
-        mu = min(rho*mu, mu_max)
+        Y = Y + mu * (L + C - M)     
+        mu = min(rho * mu, mu_max)
         
         #update error
         L_error = np.max(np.abs(L - L_old))
@@ -82,17 +87,18 @@ def trpca(M, reg=None, frontal_faces=None, rho=1.1, mu=1e-3, mu_max=1e10, eps=1e
         
         L_old = L
         C_old = C
-                            
+
     return(L, C)
 
 def t_SVT(A, tau, frontal_faces = None):
+
     """Tensor singluar value threshold. This is algorithm 3 in [1].
     
     Parameters
     ----------
-    A : np-dimensional array, tensor having its singular values thresholded
+    A : np-dimensional array, tensor being singular values thresholded
         n1 x n2 x n3 x ... x np tensor
-                    
+
     tau : float, threshold for singular values
           reg / mu, where reg and mu are defined in trpca algorithm
 
@@ -100,15 +106,15 @@ def t_SVT(A, tau, frontal_faces = None):
                     list of tuples
        
     Returns
-    ----------       
+    ----------
     W : np-dimensional array, tensor with singular values thresholded
         n1 x n1 x n3 x ... x np tensor
 
     References
     ----------
     [1] C. Lu, J. Feng, Y. Chen, W. Liu, Z. Lin, and S. Yan, 
-    "Tensor Robust Principal Component Analysis with A New Tensor Nuclear Norm",
-    2018, arXiv:1804.03728.
+    "Tensor Robust Principal Component Analysis with A New Tensor 
+    Nuclear Norm", 2018, arXiv:1804.03728.
     """
     
     if frontal_faces is None:
@@ -129,7 +135,7 @@ def t_SVT(A, tau, frontal_faces = None):
     for index in frontal_faces:
         
         #frontal face having its singular values thresholded
-        i = tuple( [slice(0, dim_A[0]),slice(0, dim_A[1])] + [i for i in index])        
+        i = tuple( [slice(0, dim_A[0]), slice(0, dim_A[1])] + [i for i in index])
         u, s, v = np.linalg.svd(A[i])
         
         #old singular values
